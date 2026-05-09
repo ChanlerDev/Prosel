@@ -12,6 +12,8 @@ export function SiteHeader() {
           </Link>
           <nav className="flex gap-5 text-sm text-[var(--muted-foreground)]">
             <Link href="/posts">Posts</Link>
+            <Link href="/categories">Categories</Link>
+            <Link href="/topics">Topics</Link>
             <Link href="/login">Login</Link>
           </nav>
         </div>

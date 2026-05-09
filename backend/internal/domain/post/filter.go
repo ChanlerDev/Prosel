@@ -13,6 +13,7 @@ type PostListFilter struct {
 	Status     *PostStatus
 	Search     string
 	CategoryID string
+	TagID      string
 	Featured   *bool
 }
 

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	domain "github.com/chanler/prosel/backend/internal/domain/post"
 )
@@ -135,12 +136,32 @@ func (r *PostRepository) SetStatus(ctx context.Context, id string, status domain
 	return nil
 }
 
+func (r *PostRepository) ReplaceTags(ctx context.Context, postID string, tagIDs []string) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("post_id = ?", postID).Delete(&PostTagModel{}).Error; err != nil {
+			return err
+		}
+		for _, tagID := range tagIDs {
+			if tagID == "" {
+				continue
+			}
+			if err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(&PostTagModel{PostID: postID, TagID: tagID}).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+}
+
 func applyPostFilter(query *gorm.DB, filter domain.PostListFilter) *gorm.DB {
 	if filter.Status != nil {
 		query = query.Where("status = ?", string(*filter.Status))
 	}
 	if filter.CategoryID != "" {
 		query = query.Where("category_id = ?", filter.CategoryID)
+	}
+	if filter.TagID != "" {
+		query = query.Joins("JOIN post_tags ON post_tags.post_id = posts.id").Where("post_tags.tag_id = ?", filter.TagID)
 	}
 	if filter.Featured != nil {
 		query = query.Where("featured = ?", *filter.Featured)

@@ -6,6 +6,7 @@ export interface Post {
   id: string;
   authorId: string;
   categoryId?: string;
+  tagIds?: string[];
   title: string;
   slug: string;
   excerpt?: string;
@@ -46,6 +47,7 @@ export interface PostEditorValues {
   contentMarkdown: string;
   coverImage: string;
   categoryId: string;
+  tagIds: string[];
   featured: boolean;
   seoTitle: string;
   seoDescription: string;

@@ -16,6 +16,7 @@ type fakePostRepo struct {
 	err        error
 	slugExists bool
 	listed     domain.PostListFilter
+	tagIDs     []string
 }
 
 func (r *fakePostRepo) Create(ctx context.Context, post *domain.Post) error {
@@ -46,6 +47,10 @@ func (r *fakePostRepo) SetStatus(ctx context.Context, id string, status domain.P
 		r.post.Status = status
 		r.post.PublishedAt = publishedAt
 	}
+	return r.err
+}
+func (r *fakePostRepo) ReplaceTags(ctx context.Context, postID string, tagIDs []string) error {
+	r.tagIDs = tagIDs
 	return r.err
 }
 

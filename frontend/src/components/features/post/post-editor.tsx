@@ -16,6 +16,7 @@ const emptyValues: PostEditorValues = {
   contentMarkdown: '',
   coverImage: '',
   categoryId: '',
+  tagIds: [],
   featured: false,
   seoTitle: '',
   seoDescription: '',
@@ -52,6 +53,14 @@ export function PostEditor({ post, isPending, error, onSubmit }: { post?: Post; 
           <Textarea className="font-mono" onChange={(event) => update('contentMarkdown', event.target.value)} rows={16} value={values.contentMarkdown} />
         </label>
         <div className="grid gap-4 md:grid-cols-2">
+          <label className="grid gap-2 text-sm">
+            Category ID
+            <Input onChange={(event) => update('categoryId', event.target.value)} value={values.categoryId} />
+          </label>
+          <label className="grid gap-2 text-sm">
+            Tag IDs
+            <Input onChange={(event) => update('tagIds', event.target.value.split(',').map((item) => item.trim()).filter(Boolean))} placeholder="tag-id-1, tag-id-2" value={values.tagIds.join(', ')} />
+          </label>
           <label className="grid gap-2 text-sm">
             Cover image URL
             <Input onChange={(event) => update('coverImage', event.target.value)} value={values.coverImage} />
@@ -90,6 +99,7 @@ function valuesFromPost(post: Post): PostEditorValues {
     contentMarkdown: post.contentMarkdown ?? '',
     coverImage: post.coverImage ?? '',
     categoryId: post.categoryId ?? '',
+    tagIds: post.tagIds ?? [],
     featured: post.featured,
     seoTitle: post.seoTitle ?? '',
     seoDescription: post.seoDescription ?? '',

@@ -15,4 +15,5 @@ type Repository interface {
 	SlugExists(ctx context.Context, slug string, excludeID *string) (bool, error)
 	IncrementView(ctx context.Context, id string) error
 	SetStatus(ctx context.Context, id string, status PostStatus, publishedAt *time.Time) error
+	ReplaceTags(ctx context.Context, postID string, tagIDs []string) error
 }

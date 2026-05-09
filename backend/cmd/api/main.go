@@ -20,6 +20,7 @@ import (
 	authUsecase "github.com/chanler/prosel/backend/internal/usecase/auth"
 	postUsecase "github.com/chanler/prosel/backend/internal/usecase/post"
 	systemUsecase "github.com/chanler/prosel/backend/internal/usecase/system"
+	taxonomyUsecase "github.com/chanler/prosel/backend/internal/usecase/taxonomy"
 )
 
 func main() {
@@ -58,7 +59,13 @@ func main() {
 	postUC := postUsecase.NewPostUsecase(postRepo)
 	postHandler := handler.NewPostHandler(postUC)
 
-	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, tokenService)
+	categoryRepo := database.NewCategoryRepository(db)
+	tagRepo := database.NewTagRepository(db)
+	topicRepo := database.NewTopicRepository(db)
+	taxonomyUC := taxonomyUsecase.NewTaxonomyUsecase(categoryRepo, tagRepo, topicRepo)
+	taxonomyHandler := handler.NewTaxonomyHandler(taxonomyUC, postUC)
+
+	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, taxonomyHandler, tokenService)
 	server := &http.Server{Addr: cfg.HTTP.Address(), Handler: router}
 
 	go func() {

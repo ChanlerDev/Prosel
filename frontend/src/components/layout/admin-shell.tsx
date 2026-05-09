@@ -28,6 +28,9 @@ function AdminFrame({ children }: { children: ReactNode }) {
         <nav className="mt-8 grid gap-3 text-sm text-[var(--muted-foreground)]">
           <Link href="/admin">Dashboard</Link>
           <Link href="/admin/posts">Posts</Link>
+          <Link href="/admin/categories">Categories</Link>
+          <Link href="/admin/tags">Tags</Link>
+          <Link href="/admin/topics">Topics</Link>
           <Link href="/admin/profile">Profile</Link>
           <Link href="/admin/security">Security</Link>
           <Link href="/admin/settings">Settings</Link>

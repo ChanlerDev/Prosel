@@ -19,6 +19,7 @@ type PostUsecase struct {
 type CreatePostRequest struct {
 	AuthorID        string
 	CategoryID      *string
+	TagIDs          []string
 	Title           string
 	Slug            string
 	Excerpt         string
@@ -31,6 +32,7 @@ type CreatePostRequest struct {
 
 type UpdatePostRequest struct {
 	CategoryID      *string
+	TagIDs          []string
 	Title           string
 	Slug            string
 	Excerpt         string
@@ -86,6 +88,9 @@ func (uc *PostUsecase) CreatePost(ctx context.Context, req CreatePostRequest) (*
 	if err := uc.posts.Create(ctx, post); err != nil {
 		return nil, err
 	}
+	if err := uc.posts.ReplaceTags(ctx, post.ID, req.TagIDs); err != nil {
+		return nil, err
+	}
 	return post, nil
 }
 
@@ -121,6 +126,9 @@ func (uc *PostUsecase) UpdatePost(ctx context.Context, id string, req UpdatePost
 	post.SEODescription = strings.TrimSpace(req.SEODescription)
 	post.UpdatedAt = time.Now().UTC()
 	if err := uc.posts.Update(ctx, post); err != nil {
+		return nil, err
+	}
+	if err := uc.posts.ReplaceTags(ctx, post.ID, req.TagIDs); err != nil {
 		return nil, err
 	}
 	return post, nil

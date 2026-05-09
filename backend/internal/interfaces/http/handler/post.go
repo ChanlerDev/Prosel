@@ -48,15 +48,16 @@ func (h *PostHandler) RegisterProtectedRoutes(admin *gin.RouterGroup) {
 }
 
 type postRequest struct {
-	CategoryID      string `json:"categoryId"`
-	Title           string `json:"title" binding:"required"`
-	Slug            string `json:"slug"`
-	Excerpt         string `json:"excerpt"`
-	ContentMarkdown string `json:"contentMarkdown"`
-	CoverImage      string `json:"coverImage"`
-	Featured        bool   `json:"featured"`
-	SEOTitle        string `json:"seoTitle"`
-	SEODescription  string `json:"seoDescription"`
+	CategoryID      string   `json:"categoryId"`
+	TagIDs          []string `json:"tagIds"`
+	Title           string   `json:"title" binding:"required"`
+	Slug            string   `json:"slug"`
+	Excerpt         string   `json:"excerpt"`
+	ContentMarkdown string   `json:"contentMarkdown"`
+	CoverImage      string   `json:"coverImage"`
+	Featured        bool     `json:"featured"`
+	SEOTitle        string   `json:"seoTitle"`
+	SEODescription  string   `json:"seoDescription"`
 }
 
 type postResponse struct {
@@ -124,7 +125,7 @@ func (h *PostHandler) create(c *gin.Context) {
 		response.Error(c, http.StatusBadRequest, "VALIDATION_ERROR", "Invalid post request", nil)
 		return
 	}
-	post, err := h.service.CreatePost(c.Request.Context(), usecase.CreatePostRequest{AuthorID: middleware.CurrentUserID(c), CategoryID: optionalString(req.CategoryID), Title: req.Title, Slug: req.Slug, Excerpt: req.Excerpt, ContentMarkdown: req.ContentMarkdown, CoverImage: req.CoverImage, Featured: req.Featured, SEOTitle: req.SEOTitle, SEODescription: req.SEODescription})
+	post, err := h.service.CreatePost(c.Request.Context(), usecase.CreatePostRequest{AuthorID: middleware.CurrentUserID(c), CategoryID: optionalString(req.CategoryID), TagIDs: req.TagIDs, Title: req.Title, Slug: req.Slug, Excerpt: req.Excerpt, ContentMarkdown: req.ContentMarkdown, CoverImage: req.CoverImage, Featured: req.Featured, SEOTitle: req.SEOTitle, SEODescription: req.SEODescription})
 	if err != nil {
 		h.handlePostError(c, err)
 		return
@@ -138,7 +139,7 @@ func (h *PostHandler) update(c *gin.Context) {
 		response.Error(c, http.StatusBadRequest, "VALIDATION_ERROR", "Invalid post request", nil)
 		return
 	}
-	post, err := h.service.UpdatePost(c.Request.Context(), c.Param("id"), usecase.UpdatePostRequest{CategoryID: optionalString(req.CategoryID), Title: req.Title, Slug: req.Slug, Excerpt: req.Excerpt, ContentMarkdown: req.ContentMarkdown, CoverImage: req.CoverImage, Featured: req.Featured, SEOTitle: req.SEOTitle, SEODescription: req.SEODescription})
+	post, err := h.service.UpdatePost(c.Request.Context(), c.Param("id"), usecase.UpdatePostRequest{CategoryID: optionalString(req.CategoryID), TagIDs: req.TagIDs, Title: req.Title, Slug: req.Slug, Excerpt: req.Excerpt, ContentMarkdown: req.ContentMarkdown, CoverImage: req.CoverImage, Featured: req.Featured, SEOTitle: req.SEOTitle, SEODescription: req.SEODescription})
 	if err != nil {
 		h.handlePostError(c, err)
 		return
