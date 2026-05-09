@@ -20,7 +20,9 @@ export class ApiClientError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit & { accessToken?: string }): Promise<T> {
+export type ApiRequestInit = RequestInit & { accessToken?: string; rawResponse?: boolean };
+
+export async function request<T>(path: string, init?: ApiRequestInit): Promise<T> {
   const headers = new Headers(init?.headers);
   headers.set('Content-Type', 'application/json');
   if (init?.accessToken) {
@@ -34,6 +36,16 @@ async function request<T>(path: string, init?: RequestInit & { accessToken?: str
   });
 
   const body = (await response.json()) as ApiResponse<T>;
+  if (init?.rawResponse) {
+    if (!response.ok || body.error) {
+      throw new ApiClientError(
+        body.error?.message ?? 'Request failed',
+        body.error?.code ?? 'REQUEST_FAILED',
+        response.status,
+      );
+    }
+    return body as T;
+  }
   if (!response.ok || body.error) {
     throw new ApiClientError(
       body.error?.message ?? 'Request failed',

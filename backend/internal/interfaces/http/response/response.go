@@ -18,6 +18,10 @@ func OK(c *gin.Context, data any) {
 	c.JSON(200, Body{Data: data})
 }
 
+func OKWithMeta(c *gin.Context, data any, meta any) {
+	c.JSON(200, Body{Data: data, Meta: meta})
+}
+
 func Error(c *gin.Context, status int, code string, message string, details any) {
 	c.JSON(status, Body{Error: &ErrorBody{Code: code, Message: message, Details: details}})
 }

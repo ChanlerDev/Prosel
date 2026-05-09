@@ -18,6 +18,7 @@ import (
 	"github.com/chanler/prosel/backend/internal/interfaces/http/handler"
 	httpRouter "github.com/chanler/prosel/backend/internal/interfaces/http/router"
 	authUsecase "github.com/chanler/prosel/backend/internal/usecase/auth"
+	postUsecase "github.com/chanler/prosel/backend/internal/usecase/post"
 	systemUsecase "github.com/chanler/prosel/backend/internal/usecase/system"
 )
 
@@ -53,7 +54,11 @@ func main() {
 	authUC := authUsecase.NewAuthUsecase(userRepo, sessionRepo, passwordHasher, tokenService, accessDuration, refreshDuration)
 	authHandler := handler.NewAuthHandler(authUC)
 
-	router := httpRouter.New(cfg, systemHandler, authHandler, tokenService)
+	postRepo := database.NewPostRepository(db)
+	postUC := postUsecase.NewPostUsecase(postRepo)
+	postHandler := handler.NewPostHandler(postUC)
+
+	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, tokenService)
 	server := &http.Server{Addr: cfg.HTTP.Address(), Handler: router}
 
 	go func() {
