@@ -13,8 +13,11 @@ import (
 	"github.com/chanler/prosel/backend/internal/infrastructure/config"
 	"github.com/chanler/prosel/backend/internal/infrastructure/database"
 	infraLogger "github.com/chanler/prosel/backend/internal/infrastructure/logger"
+	"github.com/chanler/prosel/backend/internal/infrastructure/password"
+	"github.com/chanler/prosel/backend/internal/infrastructure/token"
 	"github.com/chanler/prosel/backend/internal/interfaces/http/handler"
 	httpRouter "github.com/chanler/prosel/backend/internal/interfaces/http/router"
+	authUsecase "github.com/chanler/prosel/backend/internal/usecase/auth"
 	systemUsecase "github.com/chanler/prosel/backend/internal/usecase/system"
 )
 
@@ -41,7 +44,16 @@ func main() {
 	systemUC := systemUsecase.NewSystemUsecase(settingsRepo, healthChecker)
 	systemHandler := handler.NewSystemHandler(systemUC)
 
-	router := httpRouter.New(cfg, systemHandler)
+	userRepo := database.NewUserRepository(db)
+	sessionRepo := database.NewSessionRepository(db)
+	passwordHasher := password.NewBcryptHasher(cfg.Auth.PasswordBcryptCost)
+	accessDuration := time.Duration(cfg.Auth.AccessTokenMinutes) * time.Minute
+	refreshDuration := time.Duration(cfg.Auth.RefreshTokenHours) * time.Hour
+	tokenService := token.NewJWTService(cfg.Auth.JWTSecret, cfg.Auth.JWTIssuer, accessDuration)
+	authUC := authUsecase.NewAuthUsecase(userRepo, sessionRepo, passwordHasher, tokenService, accessDuration, refreshDuration)
+	authHandler := handler.NewAuthHandler(authUC)
+
+	router := httpRouter.New(cfg, systemHandler, authHandler, tokenService)
 	server := &http.Server{Addr: cfg.HTTP.Address(), Handler: router}
 
 	go func() {

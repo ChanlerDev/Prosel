@@ -41,6 +41,11 @@ services:
       REDIS_ADDR: redis:6379
       REDIS_DB: 0
       CORS_ALLOWED_ORIGINS: http://localhost:3000
+      JWT_SECRET: dev-secret-change-me
+      JWT_ISSUER: prosel
+      ACCESS_TOKEN_MINUTES: 15
+      REFRESH_TOKEN_HOURS: 168
+      PASSWORD_BCRYPT_COST: 12
       MIGRATIONS_DIR: migrations
     ports:
       - "8080:8080"

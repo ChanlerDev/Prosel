@@ -14,6 +14,7 @@ type Config struct {
 	Database DatabaseConfig
 	Redis    RedisConfig
 	Cors     CorsConfig
+	Auth     AuthConfig
 }
 
 type AppConfig struct {
@@ -45,6 +46,14 @@ type CorsConfig struct {
 	AllowedOrigins []string
 }
 
+type AuthConfig struct {
+	JWTSecret          string
+	JWTIssuer          string
+	AccessTokenMinutes int
+	RefreshTokenHours  int
+	PasswordBcryptCost int
+}
+
 func Load() Config {
 	return Config{
 		App: AppConfig{
@@ -67,6 +76,13 @@ func Load() Config {
 			DB:       getEnvInt("REDIS_DB", 0),
 		},
 		Cors: CorsConfig{AllowedOrigins: strings.Split(getEnv("CORS_ALLOWED_ORIGINS", "http://localhost:3000"), ",")},
+		Auth: AuthConfig{
+			JWTSecret:          getEnv("JWT_SECRET", "dev-secret-change-me"),
+			JWTIssuer:          getEnv("JWT_ISSUER", "prosel"),
+			AccessTokenMinutes: getEnvInt("ACCESS_TOKEN_MINUTES", 15),
+			RefreshTokenHours:  getEnvInt("REFRESH_TOKEN_HOURS", 168),
+			PasswordBcryptCost: getEnvInt("PASSWORD_BCRYPT_COST", 12),
+		},
 	}
 }
 

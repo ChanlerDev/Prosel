@@ -39,3 +39,36 @@ export interface HealthStatus {
   version: string;
   checkedAt: string;
 }
+
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  displayName: string;
+  avatarUrl?: string;
+  bio?: string;
+  role: 'admin';
+}
+
+export interface TokenResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  user?: User;
+}
+
+export interface LoginRequest {
+  login: string;
+  password: string;
+}
+
+export interface UpdateProfileRequest {
+  displayName: string;
+  avatarUrl: string;
+  bio: string;
+}
+
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
