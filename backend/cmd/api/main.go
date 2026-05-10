@@ -18,6 +18,7 @@ import (
 	"github.com/chanler/prosel/backend/internal/interfaces/http/handler"
 	httpRouter "github.com/chanler/prosel/backend/internal/interfaces/http/router"
 	authUsecase "github.com/chanler/prosel/backend/internal/usecase/auth"
+	dashboardUsecase "github.com/chanler/prosel/backend/internal/usecase/dashboard"
 	postUsecase "github.com/chanler/prosel/backend/internal/usecase/post"
 	systemUsecase "github.com/chanler/prosel/backend/internal/usecase/system"
 	taxonomyUsecase "github.com/chanler/prosel/backend/internal/usecase/taxonomy"
@@ -65,7 +66,11 @@ func main() {
 	taxonomyUC := taxonomyUsecase.NewTaxonomyUsecase(categoryRepo, tagRepo, topicRepo)
 	taxonomyHandler := handler.NewTaxonomyHandler(taxonomyUC, postUC)
 
-	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, taxonomyHandler, tokenService)
+	dashboardRepo := database.NewDashboardRepository(db)
+	dashboardUC := dashboardUsecase.NewDashboardUsecase(dashboardRepo)
+	dashboardHandler := handler.NewDashboardHandler(dashboardUC)
+
+	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, taxonomyHandler, dashboardHandler, tokenService)
 	server := &http.Server{Addr: cfg.HTTP.Address(), Handler: router}
 
 	go func() {

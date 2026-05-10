@@ -31,12 +31,22 @@ function AdminFrame({ children }: { children: ReactNode }) {
           <Link href="/admin/categories">Categories</Link>
           <Link href="/admin/tags">Tags</Link>
           <Link href="/admin/topics">Topics</Link>
+          <Link href="/admin/activity">Activity</Link>
           <Link href="/admin/profile">Profile</Link>
           <Link href="/admin/security">Security</Link>
           <Link href="/admin/settings">Settings</Link>
         </nav>
       </aside>
       <main className="md:pl-64">
+        <div className="border-b border-[var(--border)] bg-[var(--card)] px-6 py-3 md:hidden">
+          <nav className="flex gap-4 overflow-x-auto text-sm text-[var(--muted-foreground)]">
+            <Link href="/admin">Dashboard</Link>
+            <Link href="/admin/posts">Posts</Link>
+            <Link href="/admin/categories">Categories</Link>
+            <Link href="/admin/tags">Tags</Link>
+            <Link href="/admin/topics">Topics</Link>
+          </nav>
+        </div>
         <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--card)] px-6 py-4">
           <p className="text-sm text-[var(--muted-foreground)]">Signed in as {me.data?.displayName ?? 'admin'}</p>
           <Button className="px-3 py-1 text-xs" disabled={logout.isPending} onClick={() => logout.mutate()} type="button">
