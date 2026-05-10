@@ -36,6 +36,9 @@ func (r *DashboardRepository) GetStats(ctx context.Context) (*domain.DashboardSt
 	if err := r.db.WithContext(ctx).Model(&PostModel{}).Where("status = ?", "draft").Count(&stats.DraftPosts).Error; err != nil {
 		return nil, err
 	}
+	if err := r.db.WithContext(ctx).Model(&CommentModel{}).Where("status = ?", "pending").Count(&stats.PendingComments).Error; err != nil {
+		return nil, err
+	}
 	if err := r.db.WithContext(ctx).Model(&CategoryModel{}).Count(&stats.Categories).Error; err != nil {
 		return nil, err
 	}

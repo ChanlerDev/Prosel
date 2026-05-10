@@ -31,6 +31,7 @@ function AdminFrame({ children }: { children: ReactNode }) {
           <Link href="/admin/categories">Categories</Link>
           <Link href="/admin/tags">Tags</Link>
           <Link href="/admin/topics">Topics</Link>
+          <Link href="/admin/comments">Comments</Link>
           <Link href="/admin/activity">Activity</Link>
           <Link href="/admin/profile">Profile</Link>
           <Link href="/admin/security">Security</Link>
@@ -45,6 +46,7 @@ function AdminFrame({ children }: { children: ReactNode }) {
             <Link href="/admin/categories">Categories</Link>
             <Link href="/admin/tags">Tags</Link>
             <Link href="/admin/topics">Topics</Link>
+            <Link href="/admin/comments">Comments</Link>
           </nav>
         </div>
         <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--card)] px-6 py-4">

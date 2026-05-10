@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
+import { CommentSection } from '@/components/features/comment/comment-section';
 import { PostContent } from '@/components/features/post/post-content';
 import { SiteContainer } from '@/components/layout/site-container';
 import { SiteFooter } from '@/components/layout/site-footer';
@@ -39,6 +40,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
             </div>
             <PostContent post={post} />
           </article>
+          <CommentSection refId={post.id} refType="post" />
         </SiteContainer>
       </main>
       <SiteFooter />

@@ -18,6 +18,7 @@ import (
 	"github.com/chanler/prosel/backend/internal/interfaces/http/handler"
 	httpRouter "github.com/chanler/prosel/backend/internal/interfaces/http/router"
 	authUsecase "github.com/chanler/prosel/backend/internal/usecase/auth"
+	commentUsecase "github.com/chanler/prosel/backend/internal/usecase/comment"
 	dashboardUsecase "github.com/chanler/prosel/backend/internal/usecase/dashboard"
 	postUsecase "github.com/chanler/prosel/backend/internal/usecase/post"
 	systemUsecase "github.com/chanler/prosel/backend/internal/usecase/system"
@@ -70,7 +71,11 @@ func main() {
 	dashboardUC := dashboardUsecase.NewDashboardUsecase(dashboardRepo)
 	dashboardHandler := handler.NewDashboardHandler(dashboardUC)
 
-	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, taxonomyHandler, dashboardHandler, tokenService)
+	commentRepo := database.NewCommentRepository(db)
+	commentUC := commentUsecase.NewCommentUsecase(commentRepo)
+	commentHandler := handler.NewCommentHandler(commentUC)
+
+	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, taxonomyHandler, dashboardHandler, commentHandler, tokenService)
 	server := &http.Server{Addr: cfg.HTTP.Address(), Handler: router}
 
 	go func() {
