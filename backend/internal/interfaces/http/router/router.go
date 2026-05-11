@@ -8,7 +8,7 @@ import (
 	"github.com/chanler/prosel/backend/internal/interfaces/http/middleware"
 )
 
-func New(cfg config.Config, systemHandler *handler.SystemHandler, authHandler *handler.AuthHandler, postHandler *handler.PostHandler, taxonomyHandler *handler.TaxonomyHandler, dashboardHandler *handler.DashboardHandler, commentHandler *handler.CommentHandler, noteHandler *handler.NoteHandler, tokenParser middleware.AccessTokenParser) *gin.Engine {
+func New(cfg config.Config, systemHandler *handler.SystemHandler, authHandler *handler.AuthHandler, postHandler *handler.PostHandler, taxonomyHandler *handler.TaxonomyHandler, dashboardHandler *handler.DashboardHandler, commentHandler *handler.CommentHandler, noteHandler *handler.NoteHandler, pageHandler *handler.PageHandler, tokenParser middleware.AccessTokenParser) *gin.Engine {
 	if cfg.App.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
@@ -23,6 +23,7 @@ func New(cfg config.Config, systemHandler *handler.SystemHandler, authHandler *h
 	taxonomyHandler.RegisterPublicRoutes(api)
 	commentHandler.RegisterPublicRoutes(api)
 	noteHandler.RegisterPublicRoutes(api)
+	pageHandler.RegisterPublicRoutes(api)
 
 	protected := api.Group("")
 	protected.Use(middleware.Auth(tokenParser))
@@ -33,6 +34,7 @@ func New(cfg config.Config, systemHandler *handler.SystemHandler, authHandler *h
 	dashboardHandler.RegisterProtectedRoutes(admin)
 	commentHandler.RegisterProtectedRoutes(admin)
 	noteHandler.RegisterProtectedRoutes(admin)
+	pageHandler.RegisterProtectedRoutes(admin)
 
 	return r
 }

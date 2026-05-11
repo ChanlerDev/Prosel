@@ -21,6 +21,7 @@ import (
 	commentUsecase "github.com/chanler/prosel/backend/internal/usecase/comment"
 	dashboardUsecase "github.com/chanler/prosel/backend/internal/usecase/dashboard"
 	noteUsecase "github.com/chanler/prosel/backend/internal/usecase/note"
+	pageUsecase "github.com/chanler/prosel/backend/internal/usecase/page"
 	postUsecase "github.com/chanler/prosel/backend/internal/usecase/post"
 	systemUsecase "github.com/chanler/prosel/backend/internal/usecase/system"
 	taxonomyUsecase "github.com/chanler/prosel/backend/internal/usecase/taxonomy"
@@ -80,7 +81,12 @@ func main() {
 	noteUC := noteUsecase.NewNoteUsecase(noteRepo)
 	noteHandler := handler.NewNoteHandler(noteUC)
 
-	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, taxonomyHandler, dashboardHandler, commentHandler, noteHandler, tokenService)
+	pageRepo := database.NewPageRepository(db)
+	friendRepo := database.NewFriendRepository(db)
+	pageUC := pageUsecase.NewPageUsecase(pageRepo, friendRepo)
+	pageHandler := handler.NewPageHandler(pageUC)
+
+	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, taxonomyHandler, dashboardHandler, commentHandler, noteHandler, pageHandler, tokenService)
 	server := &http.Server{Addr: cfg.HTTP.Address(), Handler: router}
 
 	go func() {
