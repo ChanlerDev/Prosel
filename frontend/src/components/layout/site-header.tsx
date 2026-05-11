@@ -14,6 +14,7 @@ export function SiteHeader() {
             <Link href="/posts">Posts</Link>
             <Link href="/categories">Categories</Link>
             <Link href="/topics">Topics</Link>
+            <Link href="/search">Search</Link>
             <Link href="/login">Login</Link>
           </nav>
         </div>

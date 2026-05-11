@@ -12,8 +12,14 @@ import (
 	domain "github.com/chanler/prosel/backend/internal/domain/note"
 )
 
+type SearchIndexer interface {
+	IndexNote(ctx context.Context, note domain.Note) error
+	DeleteDocument(ctx context.Context, refType string, refID string) error
+}
+
 type NoteUsecase struct {
-	notes domain.Repository
+	notes  domain.Repository
+	search SearchIndexer
 }
 
 type NoteRequest struct {
@@ -27,8 +33,12 @@ type NoteRequest struct {
 	Status          string
 }
 
-func NewNoteUsecase(notes domain.Repository) *NoteUsecase {
-	return &NoteUsecase{notes: notes}
+func NewNoteUsecase(notes domain.Repository, search ...SearchIndexer) *NoteUsecase {
+	uc := &NoteUsecase{notes: notes}
+	if len(search) > 0 {
+		uc.search = search[0]
+	}
+	return uc
 }
 
 func (uc *NoteUsecase) CreateNote(ctx context.Context, req NoteRequest) (*domain.Note, error) {
@@ -41,6 +51,9 @@ func (uc *NoteUsecase) CreateNote(ctx context.Context, req NoteRequest) (*domain
 		note.PublishedAt = &publishedAt
 	}
 	if err := uc.notes.Create(ctx, note); err != nil {
+		return nil, err
+	}
+	if err := uc.indexNote(ctx, note); err != nil {
 		return nil, err
 	}
 	return note, nil
@@ -65,6 +78,9 @@ func (uc *NoteUsecase) UpdateNote(ctx context.Context, id string, req NoteReques
 	if err := uc.notes.Update(ctx, updated); err != nil {
 		return nil, err
 	}
+	if err := uc.indexNote(ctx, updated); err != nil {
+		return nil, err
+	}
 	return updated, nil
 }
 
@@ -73,7 +89,13 @@ func (uc *NoteUsecase) DeleteNote(ctx context.Context, id string) error {
 	if id == "" {
 		return domain.ErrInvalidNote
 	}
-	return uc.notes.Delete(ctx, id)
+	if err := uc.notes.Delete(ctx, id); err != nil {
+		return err
+	}
+	if uc.search != nil {
+		return uc.search.DeleteDocument(ctx, "note", id)
+	}
+	return nil
 }
 
 func (uc *NoteUsecase) GetPublicNote(ctx context.Context, slug string) (*domain.Note, error) {
@@ -123,6 +145,13 @@ func (uc *NoteUsecase) PinNote(ctx context.Context, id string, pinned bool) erro
 		pinnedAt = &now
 	}
 	return uc.notes.SetPinned(ctx, id, pinnedAt)
+}
+
+func (uc *NoteUsecase) indexNote(ctx context.Context, note *domain.Note) error {
+	if uc.search == nil {
+		return nil
+	}
+	return uc.search.IndexNote(ctx, *note)
 }
 
 func (uc *NoteUsecase) noteFromRequest(ctx context.Context, existing *domain.Note, req NoteRequest) (*domain.Note, error) {

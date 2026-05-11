@@ -23,6 +23,7 @@ import (
 	noteUsecase "github.com/chanler/prosel/backend/internal/usecase/note"
 	pageUsecase "github.com/chanler/prosel/backend/internal/usecase/page"
 	postUsecase "github.com/chanler/prosel/backend/internal/usecase/post"
+	searchUsecase "github.com/chanler/prosel/backend/internal/usecase/search"
 	systemUsecase "github.com/chanler/prosel/backend/internal/usecase/system"
 	taxonomyUsecase "github.com/chanler/prosel/backend/internal/usecase/taxonomy"
 )
@@ -59,8 +60,12 @@ func main() {
 	authUC := authUsecase.NewAuthUsecase(userRepo, sessionRepo, passwordHasher, tokenService, accessDuration, refreshDuration)
 	authHandler := handler.NewAuthHandler(authUC)
 
+	searchRepo := database.NewSearchRepository(db)
+	searchUC := searchUsecase.NewSearchUsecase(searchRepo)
+	searchHandler := handler.NewSearchHandler(searchUC)
+
 	postRepo := database.NewPostRepository(db)
-	postUC := postUsecase.NewPostUsecase(postRepo)
+	postUC := postUsecase.NewPostUsecase(postRepo, searchUC)
 	postHandler := handler.NewPostHandler(postUC)
 
 	categoryRepo := database.NewCategoryRepository(db)
@@ -78,15 +83,15 @@ func main() {
 	commentHandler := handler.NewCommentHandler(commentUC)
 
 	noteRepo := database.NewNoteRepository(db)
-	noteUC := noteUsecase.NewNoteUsecase(noteRepo)
+	noteUC := noteUsecase.NewNoteUsecase(noteRepo, searchUC)
 	noteHandler := handler.NewNoteHandler(noteUC)
 
 	pageRepo := database.NewPageRepository(db)
 	friendRepo := database.NewFriendRepository(db)
-	pageUC := pageUsecase.NewPageUsecase(pageRepo, friendRepo)
+	pageUC := pageUsecase.NewPageUsecase(pageRepo, friendRepo, searchUC)
 	pageHandler := handler.NewPageHandler(pageUC)
 
-	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, taxonomyHandler, dashboardHandler, commentHandler, noteHandler, pageHandler, tokenService)
+	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, taxonomyHandler, dashboardHandler, commentHandler, noteHandler, pageHandler, searchHandler, tokenService)
 	server := &http.Server{Addr: cfg.HTTP.Address(), Handler: router}
 
 	go func() {

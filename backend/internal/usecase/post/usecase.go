@@ -12,8 +12,14 @@ import (
 	domain "github.com/chanler/prosel/backend/internal/domain/post"
 )
 
+type SearchIndexer interface {
+	IndexPost(ctx context.Context, post domain.Post) error
+	DeleteDocument(ctx context.Context, refType string, refID string) error
+}
+
 type PostUsecase struct {
-	posts domain.Repository
+	posts  domain.Repository
+	search SearchIndexer
 }
 
 type CreatePostRequest struct {
@@ -43,8 +49,12 @@ type UpdatePostRequest struct {
 	SEODescription  string
 }
 
-func NewPostUsecase(posts domain.Repository) *PostUsecase {
-	return &PostUsecase{posts: posts}
+func NewPostUsecase(posts domain.Repository, search ...SearchIndexer) *PostUsecase {
+	uc := &PostUsecase{posts: posts}
+	if len(search) > 0 {
+		uc.search = search[0]
+	}
+	return uc
 }
 
 func (uc *PostUsecase) CreatePost(ctx context.Context, req CreatePostRequest) (*domain.Post, error) {
@@ -131,6 +141,9 @@ func (uc *PostUsecase) UpdatePost(ctx context.Context, id string, req UpdatePost
 	if err := uc.posts.ReplaceTags(ctx, post.ID, req.TagIDs); err != nil {
 		return nil, err
 	}
+	if err := uc.indexPost(ctx, post); err != nil {
+		return nil, err
+	}
 	return post, nil
 }
 
@@ -149,6 +162,9 @@ func (uc *PostUsecase) PublishPost(ctx context.Context, id string) (*domain.Post
 	post.Status = domain.PostPublished
 	post.PublishedAt = &publishedAt
 	post.UpdatedAt = time.Now().UTC()
+	if err := uc.indexPost(ctx, post); err != nil {
+		return nil, err
+	}
 	return post, nil
 }
 
@@ -163,11 +179,20 @@ func (uc *PostUsecase) UnpublishPost(ctx context.Context, id string) (*domain.Po
 	post.Status = domain.PostDraft
 	post.PublishedAt = nil
 	post.UpdatedAt = time.Now().UTC()
+	if err := uc.indexPost(ctx, post); err != nil {
+		return nil, err
+	}
 	return post, nil
 }
 
 func (uc *PostUsecase) DeletePost(ctx context.Context, id string) error {
-	return uc.posts.Delete(ctx, id)
+	if err := uc.posts.Delete(ctx, id); err != nil {
+		return err
+	}
+	if uc.search != nil {
+		return uc.search.DeleteDocument(ctx, "post", id)
+	}
+	return nil
 }
 
 func (uc *PostUsecase) GetAdminPost(ctx context.Context, id string) (*domain.Post, error) {
@@ -198,6 +223,13 @@ func (uc *PostUsecase) ListAdminPosts(ctx context.Context, filter domain.PostLis
 	filter.Search = strings.TrimSpace(filter.Search)
 	filter.Page, filter.PerPage = domain.NormalizePagination(filter.Page, filter.PerPage)
 	return uc.posts.List(ctx, filter)
+}
+
+func (uc *PostUsecase) indexPost(ctx context.Context, post *domain.Post) error {
+	if uc.search == nil {
+		return nil
+	}
+	return uc.search.IndexPost(ctx, *post)
 }
 
 var markdownMarkup = regexp.MustCompile(`[` + "`" + `*_#>\[\]()!~|{}+-]+`)

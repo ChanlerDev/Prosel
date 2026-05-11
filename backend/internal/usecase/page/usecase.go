@@ -13,9 +13,15 @@ import (
 	domain "github.com/chanler/prosel/backend/internal/domain/page"
 )
 
+type SearchIndexer interface {
+	IndexPage(ctx context.Context, page domain.Page) error
+	DeleteDocument(ctx context.Context, refType string, refID string) error
+}
+
 type PageUsecase struct {
 	pages   domain.PageRepository
 	friends domain.FriendRepository
+	search  SearchIndexer
 }
 
 type PageRequest struct {
@@ -40,8 +46,12 @@ type FriendRequest struct {
 	SortOrder   int
 }
 
-func NewPageUsecase(pages domain.PageRepository, friends domain.FriendRepository) *PageUsecase {
-	return &PageUsecase{pages: pages, friends: friends}
+func NewPageUsecase(pages domain.PageRepository, friends domain.FriendRepository, search ...SearchIndexer) *PageUsecase {
+	uc := &PageUsecase{pages: pages, friends: friends}
+	if len(search) > 0 {
+		uc.search = search[0]
+	}
+	return uc
 }
 
 func (uc *PageUsecase) CreatePage(ctx context.Context, req PageRequest) (*domain.Page, error) {
@@ -50,6 +60,9 @@ func (uc *PageUsecase) CreatePage(ctx context.Context, req PageRequest) (*domain
 		return nil, err
 	}
 	if err := uc.pages.Create(ctx, page); err != nil {
+		return nil, err
+	}
+	if err := uc.indexPage(ctx, page); err != nil {
 		return nil, err
 	}
 	return page, nil
@@ -67,6 +80,9 @@ func (uc *PageUsecase) UpdatePage(ctx context.Context, id string, req PageReques
 	if err := uc.pages.Update(ctx, updated); err != nil {
 		return nil, err
 	}
+	if err := uc.indexPage(ctx, updated); err != nil {
+		return nil, err
+	}
 	return updated, nil
 }
 
@@ -75,7 +91,13 @@ func (uc *PageUsecase) DeletePage(ctx context.Context, id string) error {
 	if id == "" {
 		return domain.ErrInvalidPage
 	}
-	return uc.pages.Delete(ctx, id)
+	if err := uc.pages.Delete(ctx, id); err != nil {
+		return err
+	}
+	if uc.search != nil {
+		return uc.search.DeleteDocument(ctx, "page", id)
+	}
+	return nil
 }
 
 func (uc *PageUsecase) GetPublicPage(ctx context.Context, slug string) (*domain.Page, error) {
@@ -158,6 +180,13 @@ func (uc *PageUsecase) ListAdminFriends(ctx context.Context, status string) ([]d
 		friendStatus = ""
 	}
 	return uc.friends.List(ctx, string(friendStatus))
+}
+
+func (uc *PageUsecase) indexPage(ctx context.Context, page *domain.Page) error {
+	if uc.search == nil {
+		return nil
+	}
+	return uc.search.IndexPage(ctx, *page)
 }
 
 func (uc *PageUsecase) pageFromRequest(ctx context.Context, existing *domain.Page, req PageRequest) (*domain.Page, error) {
