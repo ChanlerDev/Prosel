@@ -48,7 +48,11 @@ func (r *DashboardRepository) GetStats(ctx context.Context) (*domain.DashboardSt
 	if err := r.db.WithContext(ctx).Model(&TopicModel{}).Count(&stats.Topics).Error; err != nil {
 		return nil, err
 	}
-	if err := r.db.WithContext(ctx).Model(&PostModel{}).Select("COALESCE(SUM(view_count), 0)").Scan(&stats.TotalViews).Error; err != nil {
+	startToday := time.Now().UTC().Truncate(24 * time.Hour)
+	if err := r.db.WithContext(ctx).Model(&AnalyticsEventModel{}).Where("created_at >= ?", startToday).Count(&stats.TodayViews).Error; err != nil {
+		return nil, err
+	}
+	if err := r.db.WithContext(ctx).Model(&AnalyticsEventModel{}).Count(&stats.TotalViews).Error; err != nil {
 		return nil, err
 	}
 	return &stats, nil

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
+import { AnalyticsTracker } from '@/components/features/analytics/analytics-tracker';
 import { QueryProvider } from '@/lib/query/provider';
 
 import './globals.css';
@@ -14,7 +15,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <QueryProvider>{children}</QueryProvider>
+        <QueryProvider>
+          <AnalyticsTracker />
+          {children}
+        </QueryProvider>
       </body>
     </html>
   );

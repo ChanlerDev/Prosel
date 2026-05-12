@@ -18,7 +18,7 @@ export function AdminDashboard() {
     <div className="grid gap-8">
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <StatCard detail={`${stats.publishedPosts} published · ${stats.draftPosts} drafts`} title="Posts" value={stats.totalPosts} />
-        <StatCard detail="Across all published posts" title="Views" value={stats.totalViews} />
+        <StatCard detail={`${stats.todayViews} today · across all pages`} title="Views" value={stats.totalViews} />
         <StatCard detail={`${stats.tags} tags · ${stats.topics} topics`} title="Taxonomy" value={stats.categories} />
         <StatCard detail="Comment module pending" title="Pending comments" value={stats.pendingComments} />
       </div>

@@ -23,6 +23,7 @@ import (
 	aiUsecase "github.com/chanler/prosel/backend/internal/usecase/ai"
 	fileUsecase "github.com/chanler/prosel/backend/internal/usecase/file"
 	subscribeUsecase "github.com/chanler/prosel/backend/internal/usecase/subscribe"
+	analyticsUsecase "github.com/chanler/prosel/backend/internal/usecase/analytics"
 	authUsecase "github.com/chanler/prosel/backend/internal/usecase/auth"
 	commentUsecase "github.com/chanler/prosel/backend/internal/usecase/comment"
 	dashboardUsecase "github.com/chanler/prosel/backend/internal/usecase/dashboard"
@@ -107,12 +108,16 @@ func main() {
 	subscribeUC := subscribeUsecase.NewSubscribeUsecase(subscriberRepo, mailService, postUC, subscribeUsecase.Options{SiteURL: cfg.Site.URL})
 	subscribeHandler := handler.NewSubscribeHandler(subscribeUC, postUC, cfg.Site.URL)
 
+	analyticsRepo := database.NewAnalyticsRepository(db)
+	analyticsUC := analyticsUsecase.NewAnalyticsUsecase(analyticsRepo)
+	analyticsHandler := handler.NewAnalyticsHandler(analyticsUC)
+
 	aiRepo := database.NewAIRepository(db)
 	aiClient := infraAI.NewOpenAIClient(cfg.AI)
 	aiUC := aiUsecase.NewAIUsecase(aiRepo, aiClient, postUC)
 	aiHandler := handler.NewAIHandler(aiUC)
 
-	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, taxonomyHandler, dashboardHandler, commentHandler, noteHandler, pageHandler, searchHandler, fileHandler, subscribeHandler, aiHandler, tokenService)
+	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, taxonomyHandler, dashboardHandler, commentHandler, noteHandler, pageHandler, searchHandler, fileHandler, subscribeHandler, analyticsHandler, aiHandler, tokenService)
 	server := &http.Server{Addr: cfg.HTTP.Address(), Handler: router}
 
 	go func() {
