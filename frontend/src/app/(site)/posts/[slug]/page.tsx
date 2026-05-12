@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
+import { AISummaryCard } from '@/components/features/ai/ai-summary-card';
+import { TranslationSwitcher } from '@/components/features/ai/translation-switcher';
 import { CommentSection } from '@/components/features/comment/comment-section';
-import { PostContent } from '@/components/features/post/post-content';
 import { SiteContainer } from '@/components/layout/site-container';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
@@ -38,7 +39,8 @@ export default async function PostDetailPage({ params }: { params: Promise<{ slu
               {post.excerpt ? <p className="mt-5 text-lg leading-8 text-[var(--muted-foreground)]">{post.excerpt}</p> : null}
               <p className="mt-4 text-sm text-[var(--muted-foreground)]">Published {formatDate(post.publishedAt ?? post.createdAt)}</p>
             </div>
-            <PostContent post={post} />
+            <AISummaryCard refId={post.id} />
+            <TranslationSwitcher post={post} />
           </article>
           <CommentSection refId={post.id} refType="post" />
         </SiteContainer>
