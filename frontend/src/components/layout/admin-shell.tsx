@@ -36,6 +36,9 @@ function AdminFrame({ children }: { children: ReactNode }) {
           <Link href="/admin/pages">Pages</Link>
           <Link href="/admin/friends">Friends</Link>
           <Link href="/admin/search">Search</Link>
+          <Link href="/admin/files">Files</Link>
+          <Link href="/admin/subscribers">Subscribers</Link>
+          <Link href="/admin/analytics">Analytics</Link>
           <Link href="/admin/ai">AI</Link>
           <Link href="/admin/activity">Activity</Link>
           <Link href="/admin/profile">Profile</Link>
@@ -56,8 +59,10 @@ function AdminFrame({ children }: { children: ReactNode }) {
             <Link href="/admin/pages">Pages</Link>
             <Link href="/admin/friends">Friends</Link>
             <Link href="/admin/search">Search</Link>
+            <Link href="/admin/files">Files</Link>
+            <Link href="/admin/subscribers">Subscribers</Link>
+            <Link href="/admin/analytics">Analytics</Link>
             <Link href="/admin/ai">AI</Link>
-          <Link href="/admin/ai">AI</Link>
           </nav>
         </div>
         <div className="flex items-center justify-between border-b border-[var(--border)] bg-[var(--card)] px-6 py-4">

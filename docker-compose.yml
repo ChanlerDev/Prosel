@@ -46,6 +46,16 @@ services:
       ACCESS_TOKEN_MINUTES: 15
       REFRESH_TOKEN_HOURS: 168
       PASSWORD_BCRYPT_COST: 12
+      UPLOAD_DIR: uploads
+      UPLOAD_PUBLIC_URL: http://localhost:8080/uploads
+      UPLOAD_MAX_MB: 10
+      SITE_URL: http://localhost:3000
+      MAIL_ENABLED: false
+      SMTP_HOST: localhost
+      SMTP_PORT: 1025
+      SMTP_USERNAME: ""
+      SMTP_PASSWORD: ""
+      MAIL_FROM: noreply@localhost
       AI_PROVIDER: ""
       AI_API_KEY: ""
       AI_BASE_URL: https://api.openai.com/v1
@@ -54,6 +64,8 @@ services:
       MIGRATIONS_DIR: migrations
     ports:
       - "8080:8080"
+    volumes:
+      - backend_uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,3 +85,4 @@ services:
 
 volumes:
   postgres_data:
+  backend_uploads:

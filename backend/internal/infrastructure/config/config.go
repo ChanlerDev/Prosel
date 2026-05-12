@@ -15,6 +15,9 @@ type Config struct {
 	Redis    RedisConfig
 	Cors     CorsConfig
 	Auth     AuthConfig
+	File     FileConfig
+	Mail     MailConfig
+	Site     SiteConfig
 	AI       AIConfig
 }
 
@@ -55,6 +58,25 @@ type AuthConfig struct {
 	PasswordBcryptCost int
 }
 
+type FileConfig struct {
+	UploadDir       string
+	UploadPublicURL string
+	MaxUploadMB     int
+}
+
+type MailConfig struct {
+	Enabled  bool
+	Host     string
+	Port     string
+	Username string
+	Password string
+	From     string
+}
+
+type SiteConfig struct {
+	URL string
+}
+
 type AIConfig struct {
 	Provider       string
 	APIKey         string
@@ -92,6 +114,20 @@ func Load() Config {
 			RefreshTokenHours:  getEnvInt("REFRESH_TOKEN_HOURS", 168),
 			PasswordBcryptCost: getEnvInt("PASSWORD_BCRYPT_COST", 12),
 		},
+		File: FileConfig{
+			UploadDir:       getEnv("UPLOAD_DIR", "uploads"),
+			UploadPublicURL: getEnv("UPLOAD_PUBLIC_URL", "/uploads"),
+			MaxUploadMB:     getEnvInt("UPLOAD_MAX_MB", 10),
+		},
+		Mail: MailConfig{
+			Enabled:  getEnvBool("MAIL_ENABLED", false),
+			Host:     getEnv("SMTP_HOST", "localhost"),
+			Port:     getEnv("SMTP_PORT", "1025"),
+			Username: getEnv("SMTP_USERNAME", ""),
+			Password: getEnv("SMTP_PASSWORD", ""),
+			From:     getEnv("MAIL_FROM", "noreply@localhost"),
+		},
+		Site: SiteConfig{URL: strings.TrimRight(getEnv("SITE_URL", "http://localhost:3000"), "/")},
 		AI: AIConfig{
 			Provider:       strings.ToLower(strings.TrimSpace(getEnv("AI_PROVIDER", ""))),
 			APIKey:         getEnv("AI_API_KEY", ""),
@@ -123,6 +159,18 @@ func getEnvInt(key string, fallback int) int {
 		return fallback
 	}
 	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return fallback
+	}
+	return parsed
+}
+
+func getEnvBool(key string, fallback bool) bool {
+	value := os.Getenv(key)
+	if value == "" {
+		return fallback
+	}
+	parsed, err := strconv.ParseBool(value)
 	if err != nil {
 		return fallback
 	}
