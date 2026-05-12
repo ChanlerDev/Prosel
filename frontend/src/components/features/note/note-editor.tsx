@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
+import { MediaPicker } from '@/components/features/file/media-picker';
 import { ApiErrorState } from '@/components/features/system/states';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -11,8 +12,9 @@ import type { Note, NoteEditorValues, NoteStatus } from '@/types/note';
 
 const emptyValues: NoteEditorValues = { title: '', slug: '', contentMarkdown: '', mood: '', weather: '', location: '', status: 'published' };
 
-export function NoteEditor({ note, isPending, error, onSubmit }: { note?: Note; isPending: boolean; error?: string; onSubmit: (values: NoteEditorValues) => void }) {
+export function NoteEditor({ note, refId, isPending, error, onSubmit }: { note?: Note; refId?: string; isPending: boolean; error?: string; onSubmit: (values: NoteEditorValues) => void }) {
   const [values, setValues] = useState<NoteEditorValues>(() => (note ? valuesFromNote(note) : emptyValues));
+  const markdownRef = useRef<HTMLTextAreaElement>(null);
 
   return (
     <Card>
@@ -29,8 +31,9 @@ export function NoteEditor({ note, isPending, error, onSubmit }: { note?: Note; 
         </div>
         <label className="grid gap-2 text-sm">
           Markdown
-          <Textarea className="font-mono" onChange={(event) => update('contentMarkdown', event.target.value)} required rows={12} value={values.contentMarkdown} />
+          <Textarea ref={markdownRef} className="font-mono" onChange={(event) => update('contentMarkdown', event.target.value)} required rows={12} value={values.contentMarkdown} />
         </label>
+        <MediaPicker refId={refId} refType="note" onSelect={(file) => insertMarkdownImage(file.originalName, file.publicUrl)} />
         <div className="grid gap-4 md:grid-cols-4">
           <label className="grid gap-2 text-sm">
             Mood
@@ -62,6 +65,19 @@ export function NoteEditor({ note, isPending, error, onSubmit }: { note?: Note; 
 
   function update<Key extends keyof NoteEditorValues>(key: Key, value: NoteEditorValues[Key]) {
     setValues((current) => ({ ...current, [key]: value }));
+  }
+
+  function insertMarkdownImage(alt: string, url: string) {
+    const textarea = markdownRef.current;
+    const markdown = `![${alt}](${url})`;
+    const start = textarea?.selectionStart ?? values.contentMarkdown.length;
+    const end = textarea?.selectionEnd ?? values.contentMarkdown.length;
+    const next = values.contentMarkdown.slice(0, start) + markdown + values.contentMarkdown.slice(end);
+    update('contentMarkdown', next);
+    requestAnimationFrame(() => {
+      textarea?.focus();
+      textarea?.setSelectionRange(start + markdown.length, start + markdown.length);
+    });
   }
 }
 

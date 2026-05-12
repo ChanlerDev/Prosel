@@ -15,7 +15,7 @@ export function AdminPageEdit({ id }: { id: string }) {
   return (
     <div className="grid gap-5">
       <div className="flex items-center gap-3"><PageStatusBadge status={page.data.status} /><span className="text-sm text-[var(--muted-foreground)]">{page.data.template}</span></div>
-      <PageEditor error={update.isError ? update.error.message : undefined} isPending={update.isPending} onSubmit={(values) => update.mutate(values)} page={page.data} />
+      <PageEditor error={update.isError ? update.error.message : undefined} isPending={update.isPending} onSubmit={(values) => update.mutate(values)} page={page.data} refId={page.data.id} />
     </div>
   );
 }

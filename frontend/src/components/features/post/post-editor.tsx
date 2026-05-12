@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
+import { MediaPicker } from '@/components/features/file/media-picker';
 import { ApiErrorState } from '@/components/features/system/states';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -22,8 +23,9 @@ const emptyValues: PostEditorValues = {
   seoDescription: '',
 };
 
-export function PostEditor({ post, isPending, error, onSubmit }: { post?: Post; isPending: boolean; error?: string; onSubmit: (values: PostEditorValues) => void }) {
+export function PostEditor({ post, refId, isPending, error, onSubmit }: { post?: Post; refId?: string; isPending: boolean; error?: string; onSubmit: (values: PostEditorValues) => void }) {
   const [values, setValues] = useState<PostEditorValues>(() => (post ? valuesFromPost(post) : emptyValues));
+  const markdownRef = useRef<HTMLTextAreaElement>(null);
 
   return (
     <Card>
@@ -50,8 +52,9 @@ export function PostEditor({ post, isPending, error, onSubmit }: { post?: Post; 
         </label>
         <label className="grid gap-2 text-sm">
           Markdown
-          <Textarea className="font-mono" onChange={(event) => update('contentMarkdown', event.target.value)} rows={16} value={values.contentMarkdown} />
+          <Textarea ref={markdownRef} className="font-mono" onChange={(event) => update('contentMarkdown', event.target.value)} rows={16} value={values.contentMarkdown} />
         </label>
+        <MediaPicker refId={refId} refType="post" onSelect={(file) => insertMarkdownImage(file.originalName, file.publicUrl)} />
         <div className="grid gap-4 md:grid-cols-2">
           <label className="grid gap-2 text-sm">
             Category ID
@@ -88,6 +91,19 @@ export function PostEditor({ post, isPending, error, onSubmit }: { post?: Post; 
 
   function update<Key extends keyof PostEditorValues>(key: Key, value: PostEditorValues[Key]) {
     setValues((current) => ({ ...current, [key]: value }));
+  }
+
+  function insertMarkdownImage(alt: string, url: string) {
+    const textarea = markdownRef.current;
+    const markdown = `![${alt}](${url})`;
+    const start = textarea?.selectionStart ?? values.contentMarkdown.length;
+    const end = textarea?.selectionEnd ?? values.contentMarkdown.length;
+    const next = values.contentMarkdown.slice(0, start) + markdown + values.contentMarkdown.slice(end);
+    update('contentMarkdown', next);
+    requestAnimationFrame(() => {
+      textarea?.focus();
+      textarea?.setSelectionRange(start + markdown.length, start + markdown.length);
+    });
   }
 }
 

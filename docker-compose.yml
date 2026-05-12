@@ -46,9 +46,19 @@ services:
       ACCESS_TOKEN_MINUTES: 15
       REFRESH_TOKEN_HOURS: 168
       PASSWORD_BCRYPT_COST: 12
+      UPLOAD_DIR: uploads
+      UPLOAD_PUBLIC_URL: http://localhost:8080/uploads
+      UPLOAD_MAX_MB: 10
+      AI_PROVIDER: ""
+      AI_API_KEY: ""
+      AI_BASE_URL: https://api.openai.com/v1
+      AI_MODEL: gpt-4o-mini
+      AI_TIMEOUT_SECONDS: 30
       MIGRATIONS_DIR: migrations
     ports:
       - "8080:8080"
+    volumes:
+      - backend_uploads:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,3 +78,4 @@ services:
 
 volumes:
   postgres_data:
+  backend_uploads:

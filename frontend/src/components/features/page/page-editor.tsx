@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
+import { MediaPicker } from '@/components/features/file/media-picker';
 import { ApiErrorState } from '@/components/features/system/states';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -11,8 +12,9 @@ import type { Page, PageEditorValues, PageStatus, PageTemplate } from '@/types/p
 
 const emptyValues: PageEditorValues = { title: '', slug: '', subtitle: '', contentMarkdown: '', template: 'default', status: 'published', sortOrder: 0, seoTitle: '', seoDescription: '' };
 
-export function PageEditor({ page, isPending, error, onSubmit }: { page?: Page; isPending: boolean; error?: string; onSubmit: (values: PageEditorValues) => void }) {
+export function PageEditor({ page, refId, isPending, error, onSubmit }: { page?: Page; refId?: string; isPending: boolean; error?: string; onSubmit: (values: PageEditorValues) => void }) {
   const [values, setValues] = useState<PageEditorValues>(() => (page ? valuesFromPage(page) : emptyValues));
+  const markdownRef = useRef<HTMLTextAreaElement>(null);
 
   return (
     <Card>
@@ -22,7 +24,8 @@ export function PageEditor({ page, isPending, error, onSubmit }: { page?: Page; 
           <label className="grid gap-2 text-sm">Slug<Input onChange={(event) => update('slug', event.target.value)} placeholder="auto-generated if empty" value={values.slug} /></label>
         </div>
         <label className="grid gap-2 text-sm">Subtitle<Input onChange={(event) => update('subtitle', event.target.value)} value={values.subtitle} /></label>
-        <label className="grid gap-2 text-sm">Markdown<Textarea className="font-mono" onChange={(event) => update('contentMarkdown', event.target.value)} required rows={14} value={values.contentMarkdown} /></label>
+        <label className="grid gap-2 text-sm">Markdown<Textarea ref={markdownRef} className="font-mono" onChange={(event) => update('contentMarkdown', event.target.value)} required rows={14} value={values.contentMarkdown} /></label>
+        <MediaPicker refId={refId} refType="page" onSelect={(file) => insertMarkdownImage(file.originalName, file.publicUrl)} />
         <div className="grid gap-4 md:grid-cols-3">
           <label className="grid gap-2 text-sm">Template<select className="rounded-xl border border-[var(--border)] bg-transparent px-3 py-2 text-sm" onChange={(event) => update('template', event.target.value as PageTemplate)} value={values.template}><option value="default">Default</option><option value="about">About</option><option value="friends">Friends</option><option value="projects">Projects</option></select></label>
           <label className="grid gap-2 text-sm">Status<select className="rounded-xl border border-[var(--border)] bg-transparent px-3 py-2 text-sm" onChange={(event) => update('status', event.target.value as PageStatus)} value={values.status}><option value="published">Published</option><option value="draft">Draft</option><option value="archived">Archived</option></select></label>
@@ -40,6 +43,19 @@ export function PageEditor({ page, isPending, error, onSubmit }: { page?: Page; 
 
   function update<Key extends keyof PageEditorValues>(key: Key, value: PageEditorValues[Key]) {
     setValues((current) => ({ ...current, [key]: value }));
+  }
+
+  function insertMarkdownImage(alt: string, url: string) {
+    const textarea = markdownRef.current;
+    const markdown = `![${alt}](${url})`;
+    const start = textarea?.selectionStart ?? values.contentMarkdown.length;
+    const end = textarea?.selectionEnd ?? values.contentMarkdown.length;
+    const next = values.contentMarkdown.slice(0, start) + markdown + values.contentMarkdown.slice(end);
+    update('contentMarkdown', next);
+    requestAnimationFrame(() => {
+      textarea?.focus();
+      textarea?.setSelectionRange(start + markdown.length, start + markdown.length);
+    });
   }
 }
 

@@ -15,6 +15,8 @@ type Config struct {
 	Redis    RedisConfig
 	Cors     CorsConfig
 	Auth     AuthConfig
+	File     FileConfig
+	AI       AIConfig
 }
 
 type AppConfig struct {
@@ -54,6 +56,20 @@ type AuthConfig struct {
 	PasswordBcryptCost int
 }
 
+type FileConfig struct {
+	UploadDir       string
+	UploadPublicURL string
+	MaxUploadMB     int
+}
+
+type AIConfig struct {
+	Provider       string
+	APIKey         string
+	BaseURL        string
+	Model          string
+	TimeoutSeconds int
+}
+
 func Load() Config {
 	return Config{
 		App: AppConfig{
@@ -82,6 +98,18 @@ func Load() Config {
 			AccessTokenMinutes: getEnvInt("ACCESS_TOKEN_MINUTES", 15),
 			RefreshTokenHours:  getEnvInt("REFRESH_TOKEN_HOURS", 168),
 			PasswordBcryptCost: getEnvInt("PASSWORD_BCRYPT_COST", 12),
+		},
+		File: FileConfig{
+			UploadDir:       getEnv("UPLOAD_DIR", "uploads"),
+			UploadPublicURL: getEnv("UPLOAD_PUBLIC_URL", "/uploads"),
+			MaxUploadMB:     getEnvInt("UPLOAD_MAX_MB", 10),
+		},
+		AI: AIConfig{
+			Provider:       strings.ToLower(strings.TrimSpace(getEnv("AI_PROVIDER", ""))),
+			APIKey:         getEnv("AI_API_KEY", ""),
+			BaseURL:        strings.TrimRight(getEnv("AI_BASE_URL", "https://api.openai.com/v1"), "/"),
+			Model:          getEnv("AI_MODEL", "gpt-4o-mini"),
+			TimeoutSeconds: getEnvInt("AI_TIMEOUT_SECONDS", 30),
 		},
 	}
 }

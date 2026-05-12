@@ -22,7 +22,7 @@ export function AdminNoteEdit({ id }: { id: string }) {
           {note.data.pinnedAt ? 'Unpin' : 'Pin'}
         </Button>
       </div>
-      <NoteEditor error={update.isError ? update.error.message : undefined} isPending={update.isPending} note={note.data} onSubmit={(values) => update.mutate(values)} />
+      <NoteEditor error={update.isError ? update.error.message : undefined} isPending={update.isPending} note={note.data} onSubmit={(values) => update.mutate(values)} refId={note.data.id} />
     </div>
   );
 }

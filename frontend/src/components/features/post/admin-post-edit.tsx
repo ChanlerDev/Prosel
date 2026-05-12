@@ -1,5 +1,6 @@
 'use client';
 
+import { AdminAITools } from '@/components/features/ai/admin-ai-tools';
 import { ApiErrorState, LoadingState } from '@/components/features/system/states';
 import { PostEditor } from '@/components/features/post/post-editor';
 import { PostPublishButton } from '@/components/features/post/post-publish-button';
@@ -17,9 +18,10 @@ export function AdminPostEdit({ id }: { id: string }) {
     <div className="grid gap-5">
       <div className="flex items-center gap-3">
         <PostStatusBadge status={post.data.status} />
-        <PostPublishButton post={post.data} />
+        <PostPublishButton post={post.data} refId={post.data.id} />
       </div>
-      <PostEditor error={update.isError ? update.error.message : undefined} isPending={update.isPending} onSubmit={(values) => update.mutate(values)} post={post.data} />
+      <PostEditor error={update.isError ? update.error.message : undefined} isPending={update.isPending} onSubmit={(values) => update.mutate(values)} post={post.data} refId={post.data.id} />
+      <AdminAITools post={post.data} />
     </div>
   );
 }

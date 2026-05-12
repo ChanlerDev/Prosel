@@ -9,6 +9,8 @@ import (
 	"syscall"
 	"time"
 
+	infraAI "github.com/chanler/prosel/backend/internal/infrastructure/ai"
+	"github.com/chanler/prosel/backend/internal/infrastructure/storage"
 	"github.com/chanler/prosel/backend/internal/infrastructure/cache"
 	"github.com/chanler/prosel/backend/internal/infrastructure/config"
 	"github.com/chanler/prosel/backend/internal/infrastructure/database"
@@ -17,6 +19,8 @@ import (
 	"github.com/chanler/prosel/backend/internal/infrastructure/token"
 	"github.com/chanler/prosel/backend/internal/interfaces/http/handler"
 	httpRouter "github.com/chanler/prosel/backend/internal/interfaces/http/router"
+	aiUsecase "github.com/chanler/prosel/backend/internal/usecase/ai"
+	fileUsecase "github.com/chanler/prosel/backend/internal/usecase/file"
 	authUsecase "github.com/chanler/prosel/backend/internal/usecase/auth"
 	commentUsecase "github.com/chanler/prosel/backend/internal/usecase/comment"
 	dashboardUsecase "github.com/chanler/prosel/backend/internal/usecase/dashboard"
@@ -91,7 +95,17 @@ func main() {
 	pageUC := pageUsecase.NewPageUsecase(pageRepo, friendRepo, searchUC)
 	pageHandler := handler.NewPageHandler(pageUC)
 
-	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, taxonomyHandler, dashboardHandler, commentHandler, noteHandler, pageHandler, searchHandler, tokenService)
+	fileRepo := database.NewFileRepository(db)
+	localStorage := storage.NewLocalStorage(cfg.File.UploadDir, cfg.File.UploadPublicURL)
+	fileUC := fileUsecase.NewFileUsecase(fileRepo, localStorage, fileUsecase.Options{MaxUploadBytes: int64(cfg.File.MaxUploadMB) << 20})
+	fileHandler := handler.NewFileHandler(fileUC)
+
+	aiRepo := database.NewAIRepository(db)
+	aiClient := infraAI.NewOpenAIClient(cfg.AI)
+	aiUC := aiUsecase.NewAIUsecase(aiRepo, aiClient, postUC)
+	aiHandler := handler.NewAIHandler(aiUC)
+
+	router := httpRouter.New(cfg, systemHandler, authHandler, postHandler, taxonomyHandler, dashboardHandler, commentHandler, noteHandler, pageHandler, searchHandler, fileHandler, aiHandler, tokenService)
 	server := &http.Server{Addr: cfg.HTTP.Address(), Handler: router}
 
 	go func() {
